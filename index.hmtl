@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ប្រព័ន្ធចុះឈ្មោះសិស្ស</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,"Noto Sans Khmer",sans-serif;
+    background:#eef5ff;
+    color:#172033;
+}
+
+header{
+    background:linear-gradient(135deg,#0757c9,#1688ff);
+    color:white;
+    text-align:center;
+    padding:25px 15px;
+}
+
+header h1{
+    margin:0 0 8px;
+    font-size:25px;
+}
+
+.container{
+    max-width:650px;
+    margin:25px auto;
+    padding:15px;
+}
+
+.card{
+    background:white;
+    border-radius:18px;
+    padding:22px;
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+h2{
+    color:#0757c9;
+    margin-top:0;
+}
+
+label{
+    display:block;
+    margin-top:14px;
+    margin-bottom:6px;
+    font-weight:bold;
+}
+
+input,select{
+    width:100%;
+    padding:13px;
+    border:1px solid #ccd5e3;
+    border-radius:10px;
+    font-size:16px;
+    outline:none;
+}
+
+input:focus,select:focus{
+    border-color:#1688ff;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin-top:20px;
+    border:0;
+    border-radius:10px;
+    background:#0757c9;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#06469f;
+}
+
+.secondary{
+    background:#18a558;
+}
+
+.danger{
+    background:#dc3545;
+}
+
+.result{
+    display:none;
+    text-align:center;
+}
+
+.qr{
+    margin:15px auto;
+    width:200px;
+}
+
+.info{
+    text-align:left;
+    background:#f4f8ff;
+    padding:15px;
+    border-radius:12px;
+    line-height:1.8;
+}
+
+footer{
+    text-align:center;
+    padding:25px;
+    color:#667085;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎓 ប្រព័ន្ធចុះឈ្មោះសិស្ស</h1>
+    <div>Digital Student Registration System</div>
+</header>
+
+<div class="container">
+
+<div class="card">
+<h2>📝 ចុះឈ្មោះសិស្ស</h2>
+
+<form id="studentForm">
+
+<label>Student ID</label>
+<input type="text" id="studentId"
+placeholder="ឧ. ST001" required>
+
+<label>ឈ្មោះសិស្ស</label>
+<input type="text" id="name"
+placeholder="បញ្ចូលឈ្មោះសិស្ស" required>
+
+<label>ថ្ងៃខែឆ្នាំកំណើត</label>
+<input type="date" id="dob" required>
+
+<label>ភេទ</label>
+<select id="gender" required>
+<option value="">-- ជ្រើសរើស --</option>
+<option>ប្រុស</option>
+<option>ស្រី</option>
+</select>
+
+<label>ថ្នាក់</label>
+<select id="grade" required>
+<option value="">-- ជ្រើសរើសថ្នាក់ --</option>
+<option>ថ្នាក់ទី 7</option>
+<option>ថ្នាក់ទី 8</option>
+<option>ថ្នាក់ទី 9</option>
+<option>ថ្នាក់ទី 10</option>
+<option>ថ្នាក់ទី 11</option>
+<option>ថ្នាក់ទី 12</option>
+</select>
+
+<label>លេខទូរសព្ទ</label>
+<input type="tel" id="phone"
+placeholder="ឧ. 012345678">
+
+<button type="submit">
+💾 ចុះឈ្មោះ
+</button>
+
+</form>
+</div>
+
+<div class="card result" id="result">
+
+<h2>✅ ចុះឈ្មោះជោគជ័យ</h2>
+
+<div class="info">
+<div><b>Student ID:</b> <span id="rId"></span></div>
+<div><b>ឈ្មោះ:</b> <span id="rName"></span></div>
+<div><b>ថ្ងៃកំណើត:</b> <span id="rDob"></span></div>
+<div><b>ភេទ:</b> <span id="rGender"></span></div>
+<div><b>ថ្នាក់:</b> <span id="rGrade"></span></div>
+<div><b>ទូរសព្ទ:</b> <span id="rPhone"></span></div>
+</div>
+
+<img id="qrImage" class="qr" alt="QR Code">
+
+<button class="secondary" onclick="downloadQR()">
+📥 រក្សាទុក QR Code
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>🔎 ស្វែងរកសិស្ស</h2>
+
+<input id="searchId"
+placeholder="បញ្ចូល Student ID">
+
+<button onclick="searchStudent()">
+🔍 ស្វែងរក
+</button>
+
+<div id="searchResult"></div>
+
+</div>
+
+</div>
+
+<footer>
+© 2026 Digital Student Registration System
+</footer>
+
+<script>
+
+let currentQR = "";
+
+document.getElementById("studentForm").addEventListener("submit",function(e){
+
+    e.preventDefault();
+
+    const student = {
+        id: document.getElementById("studentId").value.trim(),
+        name: document.getElementById("name").value.trim(),
+        dob: document.getElementById("dob").value,
+        gender: document.getElementById("gender").value,
+        grade: document.getElementById("grade").value,
+        phone: document.getElementById("phone").value.trim()
+    };
+
+    if(!student.id || !student.name){
+        alert("សូមបំពេញព័ត៌មាន!");
+        return;
+    }
+
+    let students =
+        JSON.parse(localStorage.getItem("students")) || [];
+
+    const exists =
+        students.some(s => s.id === student.id);
+
+    if(exists){
+        alert("Student ID នេះមានរួចហើយ!");
+        return;
+    }
+
+    students.push(student);
+
+    localStorage.setItem(
+        "students",
+        JSON.stringify(students)
+    );
+
+    showStudent(student);
+
+    alert("ចុះឈ្មោះបានជោគជ័យ!");
+
+    document.getElementById("studentForm").reset();
+
+});
+
+function showStudent(student){
+
+    document.getElementById("result").style.display="block";
+
+    document.getElementById("rId").textContent=student.id;
+    document.getElementById("rName").textContent=student.name;
+    document.getElementById("rDob").textContent=student.dob;
+    document.getElementById("rGender").textContent=student.gender;
+    document.getElementById("rGrade").textContent=student.grade;
+    document.getElementById("rPhone").textContent=student.phone;
+
+    const data =
+        JSON.stringify(student);
+
+    currentQR =
+        "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="
+        + encodeURIComponent(data);
+
+    document.getElementById("qrImage").src=currentQR;
+
+    window.scrollTo({
+        top:document.body.scrollHeight,
+        behavior:"smooth"
+    });
+}
+
+function searchStudent(){
+
+    const id =
+        document.getElementById("searchId").value.trim();
+
+    const students =
+        JSON.parse(localStorage.getItem("students")) || [];
+
+    const student =
+        students.find(s => s.id === id);
+
+    const box =
+        document.getElementById("searchResult");
+
+    if(!student){
+
+        box.innerHTML =
+        "<p style='color:red;margin-top:15px'>❌ រកមិនឃើញសិស្សទេ</p>";
+
+        return;
+    }
+
+    box.innerHTML = `
+    <div class="info" style="margin-top:15px">
+        <b>Student ID:</b> ${student.id}<br>
+        <b>ឈ្មោះ:</b> ${student.name}<br>
+        <b>ថ្ងៃកំណើត:</b> ${student.dob}<br>
+        <b>ភេទ:</b> ${student.gender}<br>
+        <b>ថ្នាក់:</b> ${student.grade}<br>
+        <b>ទូរសព្ទ:</b> ${student.phone}
+    </div>
+    `;
+}
+
+function downloadQR(){
+
+    if(!currentQR){
+        alert("មិនទាន់មាន QR Code!");
+        return;
+    }
+
+    const link =
+        document.createElement("a");
+
+    link.href=currentQR;
+    link.download="student-qr.png";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+}
+
+</script>
+
+</body>
+</html>
